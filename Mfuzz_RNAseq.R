@@ -161,9 +161,14 @@ for ( i in unique(time) ){
 exprs_with_time=as.matrix(mean_rpkn_ok, header=TRUE, sep="\t",row.names=1,as.is=TRUE)
 # we create the Mfuzz object (ExpressionSet)
 exprSet=ExpressionSet(assayData=exprs_with_time)
+
+#--------------------------------------------------------------------------------------------------------------------------
 # As a first step,  we exclude genes with more than 25% of the measurements missing 
 # -> genes with 0 RPKN in 25% of the conditions  
 exprSet.r=filter.NA(exprSet, thres=0.25)
+#--------------------------------------------------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------------------------------------------------
 # Fuzzy  c-means  like  many  other  cluster  algorithms,  does  not  allow  for  missing  values.
 # Thus,  we  timelace  remaining  missing  values  by  the  average  values  expression  value  of  the
 # corresponding gene.
@@ -174,6 +179,9 @@ exprSet.r=filter.NA(exprSet, thres=0.25)
   # knn- missing values will be replaced by the averging over the corresponding expression values of the k-nearest neighbours,
   # knnw-same replacement method as knn, but the expression values averaged are weighted by the distance to the corresponding neighbour
 exprSet.f=fill.NA(exprSet.r,mode="mean")
+#--------------------------------------------------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------------------------------------------------
 # Most cluster analyses published include a filtering step to remove genes which are expressed
 # at  low  levels  or  show  only  small  changes  in  expression.   Different  filtering  procedures  have
 # been proposed.  A popular procedure is the setting of a minimum threshold for variation
@@ -182,19 +190,31 @@ exprSet.f=fill.NA(exprSet.r,mode="mean")
 # dure currently exists, we avoided any prior filtering of gene data.  This prevents the loss of
 # genes that may be biologically important.
 tmp=filter.std(exprSet.f,min.std=0, visu=FALSE)
+#--------------------------------------------------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------------------------------------------------
 # Since  the  clustering  is  performed  in  Euclidian  space,  the  expression  values  of  genes  were
 # standardised to have a mean value of zero and a standard deviation of one.  This step ensures
 # that vectors of genes with similar changes in expression are close in Euclidean space
 # Importantly, Mfuzz assumes that the given expression data are fully preprocessed including  any  data  normalisation.
 # The  function standardise does  not  replace  the  normalisation step (eg RPKN normalization).
 exprSet.s=standardise(tmp)
+#--------------------------------------------------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------------------------------------------------
 # clustering
 m1=mestimate(exprSet.s)
 cl=mfuzz(exprSet.s,c=nb_clusters,m=m1)
-# membership cut-off part
+#--------------------------------------------------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------------------------------------------------
+# membership cut-off part and plot clusters
 pdf(paste(output,paste(paste("clusters_Mfuzz_membership_equals_",membership_cutoff,sep=""),".pdf",sep=""), sep="/"))
 mfuzz.plot2(exprSet.s,cl=cl,time.labels=unique(time),min.mem=membership_cutoff, colo="fancy", x11=FALSE)
 dev.off()
+#--------------------------------------------------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------------------------------------------------
 # generates one genes list per cluster
 acore.list=acore(exprSet.s,cl=cl,min.acore=membership_cutoff)
 for (cluster in 1:nb_clusters){
@@ -202,3 +222,4 @@ for (cluster in 1:nb_clusters){
   cluster_table=merge(alldata,acore.list[[cluster]][2], by="row.names", all.y=TRUE)
   write.table(cluster_table,paste(output,paste(paste("list_of_genes_in_cluster",cluster,sep="_"),".txt"),sep="/"))
 }
+#--------------------------------------------------------------------------------------------------------------------------
