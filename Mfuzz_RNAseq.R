@@ -1,6 +1,4 @@
-#!/usr/bin/env Rscript
-
-#Author : Amandine Velt
+#Author : Amandine Velt (amandine.velt@inra.fr)
 #Date : 18/11/2016
 
 #################################################################################################################################################################
@@ -13,7 +11,7 @@
 # a RPKN (reads per kilobase number). After gene length normalization, this script performs the clustering of gene expression time-series RNA-seq data with Mfuzz.
 #
 # Usage in, e.g, Rstudio :
-# ./Mfuzz_RNAseq -f count_files_folder -a annotation -g gene_name_attribute -t time -n nb_clusters -m membership_cutoff
+# ./Mfuzz_RNAseq -f count_files_folder -a annotation -b gene_name_attribute -t time -n nb_clusters -m membership_cutoff -o output_directory
 #
 # Arguments description :
 # count_files_folder -> directory containing all the raw count data tables (one per sample)
@@ -24,14 +22,16 @@
 #   samples of a same time
 # nb_clusters -> number of clusters to generate with Mfuzz (empirical choice)
 # membership_cutoff -> the membership cut-off to use with Mfuzz -> see the Mfuzz paper : http://www.bioinformation.net/002/000200022007.pdf
+# output -> directory where store the results
 #
 # Examples of arguments to give :
-# count_files_folder="/home/user/count_files_folder" /"V:/RNA-Seq_GenOak_3rd_analysis/16_11_18_Analyse_finale_high_GA_vs_low_GA/clustering_genes_GA_avec_donnees_publiques/count_files"
-# annotation="HS.Genes.v2.gff" / "V:/RNA-Seq_GenOak_3rd_analysis/public_data/reference_files_oak/Qrob_H2.3_Genes_v2.2_20161004.gff"
+# count_files_folder="/home/user/count_files_folder"
+# annotation="HS.Genes.v2.gff"
 # gene_name_attribute="gene"
-# time=c("time1","time1","time1","time2","time2","time2","time3")
+# time="time1,time1,time1,time2,time2,time2,time3"
 # nb_clusters = 4
 # membership_cutoff = 0.7
+# output = /home/user/cluster_output
 #################################################################################################################################################################
 
 library("optparse")
@@ -40,15 +40,17 @@ option_list = list(
   make_option(c("-f", "--folder"), type="character", default=NULL, 
     help="Directory containing all the raw count data tables (one per sample)", metavar="character"),
   make_option(c("-a", "--annotation"), type="character", default=NULL, 
-    help="A gtf or gff file allowing to calculate the genes length", metavar="character")
-  make_option(c("-g", "--gene_attribute"), type="character", default="gene", 
-    help="The name of the attribute in the gtf referring to the gene information [default= %default]", metavar="character")
+    help="A gtf or gff file allowing to calculate the genes length", metavar="character"),
+  make_option(c("-b", "--gene_attribute"), type="character", default="gene", 
+    help="The name of the attribute in the gtf referring to the gene information [default= %default]", metavar="character"),
   make_option(c("-t", "--time"), type="character", default=NULL, 
-    help="Give the time value of each file by respecting the same order in the vector than the files in the folder. If several files correspond to a same time (replicates), give the same time value and then the script performs the mean on the normalized counts of all the samples of a same time", metavar="character")
+    help="Give the time value of each file by respecting the same order in the vector than the files in the folder. Give a list of type 'time1,time1,time1,time2,time2,time2,time3'. If several files correspond to a same time (replicates), give the same time value and then the script performs the mean on the normalized counts of all the samples of a same time", metavar="character"),
   make_option(c("-n", "--nb_clusters"), type="integer", default=4, 
-    help="Number of clusters to generate with Mfuzz (empirical choice) [default= %default]", metavar="character")
+    help="Number of clusters to generate with Mfuzz (empirical choice) [default= %default]", metavar="integer"),
   make_option(c("-m", "--membership_cutoff"), type="integer", default=0.7, 
-    help="The membership cut-off to use with Mfuzz -> see the Mfuzz paper : http://www.bioinformation.net/002/000200022007.pdf [default= %default]", metavar="character")
+    help="The membership cut-off to use with Mfuzz -> see the Mfuzz paper : http://www.bioinformation.net/002/000200022007.pdf [default= %default]", metavar="integer"),
+  make_option(c("-o", "--output"), type="character", default=NULL, 
+    help="The directory where store the results. By default, the current directory. [default= %default]", metavar="character")
 ); 
  
 opt_parser = OptionParser(option_list=option_list);
@@ -71,21 +73,28 @@ if (is.null(opt$time)){
 count_files_folder=opt$folder
 annotation=opt$annotation
 gene_name_attribute=opt$gene_attribute
-time=opt$time
+time=as.vector(strsplit(opt$time,","))[[1]]
 nb_clusters=opt$nb_clusters
 membership_cutoff=opt$membership_cutoff
+output=opt$output
+
+if (is.null(output)){
+  output=getwd()
+}
+
+suppressMessages(library("tools"))
+annotation_ext=file_ext(annotation)
 
 # libraries dependencies
 suppressMessages(library("Mfuzz"))
 suppressMessages(library("GenomicFeatures"))
 suppressMessages(library("DESeq"))
 suppressMessages(library("edgeR"))
-suppressMessages(library("tools"))
 # create the object with all count files
 files=list.files(count_files_folder)
 raw=readDGE(files, path=count_files_folder, group=c(1:length(files)), columns=c(1,2))
 # create transcripts database from gtf or gff
-txdb=makeTxDbFromGFF(annotation,format="auto")
+txdb=makeTxDbFromGFF(annotation,format=annotation_ext)
 # then collect the exons per gene id
 exons.list.per.gene=exonsBy(txdb,by=gene_name_attribute)
 # then for each gene, reduce all the exons to a set of non overlapping exons, calculate their lengths (widths) and sum then
@@ -125,7 +134,7 @@ alldata_ok = merge(alldata, rpkn, by="row.names", all.x=T)
 alldata=alldata_ok[,-1]
 rownames(alldata)=alldata_ok[,1]
 # write of this table containing the raw read counts and the different normalization
-write.table(alldata, "normalized_counts_all_genes.txt", sep="\t", quote=F, row.names=T, dec=".")
+write.table(alldata, paste(output,"normalized_counts_all_genes.txt",sep="/"), sep="\t", quote=F, row.names=T, dec=".")
 first_rpkn_column=dim(alldata)[2]-length(files)+1
 # here we create a matrix containing all the RPKN columns, used by Mfuzz for the clustering
 exprs=as.matrix(alldata[,first_rpkn_column:dim(alldata)[2]])
@@ -172,7 +181,7 @@ exprSet.f=fill.NA(exprSet.r,mode="mean")
 # Thus, the value of a filtering threshold remains arbitrary.  As no stringent filtering proce-
 # dure currently exists, we avoided any prior filtering of gene data.  This prevents the loss of
 # genes that may be biologically important.
-tmp=filter.std(exprSet.f,min.std=0)
+tmp=filter.std(exprSet.f,min.std=0, visu=FALSE)
 # Since  the  clustering  is  performed  in  Euclidian  space,  the  expression  values  of  genes  were
 # standardised to have a mean value of zero and a standard deviation of one.  This step ensures
 # that vectors of genes with similar changes in expression are close in Euclidean space
@@ -183,12 +192,13 @@ exprSet.s=standardise(tmp)
 m1=mestimate(exprSet.s)
 cl=mfuzz(exprSet.s,c=nb_clusters,m=m1)
 # membership cut-off part
-pdf(paste(paste("clusters_Mfuzz_membership_equals_",membership_cutoff),".pdf"))
+pdf(paste(output,paste(paste("clusters_Mfuzz_membership_equals_",membership_cutoff,sep=""),".pdf",sep=""), sep="/"))
 mfuzz.plot2(exprSet.s,cl=cl,time.labels=unique(time),min.mem=membership_cutoff, colo="fancy", x11=FALSE)
 dev.off()
 # generates one genes list per cluster
 acore.list=acore(exprSet.s,cl=cl,min.acore=membership_cutoff)
 for (cluster in 1:nb_clusters){
   print(paste(paste("Number of genes in cluster", cluster, sep=" "),dim(acore.list[[cluster]])[1], sep=" : "))
-  write.table(acore.list[[cluster]][2],paste(paste("list_of_genes_in_cluster",cluster,sep="_"),".txt"))
+  cluster_table=merge(alldata,acore.list[[cluster]][2], by="row.names", all.y=TRUE)
+  write.table(cluster_table,paste(output,paste(paste("list_of_genes_in_cluster",cluster,sep="_"),".txt"),sep="/"))
 }
