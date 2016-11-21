@@ -34,8 +34,15 @@
 # output = /home/user/cluster_output
 #################################################################################################################################################################
 
-library("optparse")
- 
+# libraries dependencies
+suppressMessages(library("optparse"))
+suppressMessages(library("tools"))
+suppressMessages(library("Mfuzz"))
+suppressMessages(library("GenomicFeatures"))
+suppressMessages(library("DESeq"))
+suppressMessages(library("edgeR"))
+
+# options of the script
 option_list = list(
   make_option(c("-f", "--folder"), type="character", default=NULL, 
     help="Directory containing all the raw count data tables (one per sample)", metavar="character"),
@@ -53,6 +60,7 @@ option_list = list(
     help="The directory where store the results. By default, the current directory. [default= %default]", metavar="character")
 ); 
  
+# parsing of the arguments
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
@@ -82,14 +90,7 @@ if (is.null(output)){
   output=getwd()
 }
 
-suppressMessages(library("tools"))
 annotation_ext=file_ext(annotation)
-
-# libraries dependencies
-suppressMessages(library("Mfuzz"))
-suppressMessages(library("GenomicFeatures"))
-suppressMessages(library("DESeq"))
-suppressMessages(library("edgeR"))
 # create the object with all count files
 files=list.files(count_files_folder)
 raw=readDGE(files, path=count_files_folder, group=c(1:length(files)), columns=c(1,2))
