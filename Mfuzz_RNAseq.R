@@ -49,15 +49,15 @@ suppressMessages(library("edgeR"))
 # options of the script
 option_list = list(
   make_option(c("-f", "--folder"), type="character", default=NULL, 
-    help="Directory containing all the raw count data tables (one per sample)", metavar="character"),
+    help="[REQUIRED] Directory containing all the raw count data tables (one per sample)", metavar="character"),
   make_option(c("-a", "--annotation"), type="character", default=NULL, 
-    help="A gtf or gff file with transcripts/genes information allowing to calculate the genes length (sum of the exons length, overlap of exons is take into account)", metavar="character"),
-  make_option(c("-b", "--gene_attribute"), type="character", default="gene", 
-    help="The name of the attribute in the gtf referring to the gene information [default= %default]", metavar="character"),
+    help="[REQUIRED] A gtf or gff file with transcripts/genes information allowing to calculate the genes length (sum of the exons length, overlap of exons is take into account)", metavar="character"),
   make_option(c("-t", "--time"), type="character", default=NULL, 
-    help="Give the time value of each file by respecting the same order in the vector than the files in the folder. 
+    help="[REQUIRED] Give the time value of each file by respecting the same order in the vector than the files in the folder. 
             Give a list of type 'time1,time1,time1,time2,time2,time2,time3'. 
             If several files correspond to a same time (replicates), give the same time value and then the script performs the mean on the normalized counts of all the samples of a same time", metavar="character"),
+  make_option(c("-b", "--gene_attribute"), type="character", default="gene", 
+    help="The name of the attribute in the gtf referring to the gene information [default= %default]", metavar="character"),
   make_option(c("-n", "--nb_clusters"), type="integer", default=4, 
     help="Number of clusters to generate with Mfuzz (empirical choice) [default= %default]", metavar="integer"),
   make_option(c("-m", "--membership_cutoff"), type="integer", default=0.7, 
@@ -65,7 +65,8 @@ option_list = list(
           By default, genes having a membership value of 0.7 for the cluster are recovered in the list for this cluster.
           See the Mfuzz paper : http://www.bioinformation.net/002/000200022007.pdf [default= %default]", metavar="integer"),
   make_option(c("-s", "--min_std"), type="integer", default=0, 
-    help="Threshold for minimum standard deviation, use by Mfuzz. If the standard deviation of a gene's expression is smaller than min.std the corresponding gene will be excluded. Default : no filtering. [default= %default]", metavar="integer"),
+    help="Threshold for minimum standard deviation, use by Mfuzz. If the standard deviation of a gene's expression is smaller than min.std the corresponding gene will be excluded.
+          Default : no filtering. [default= %default]", metavar="integer"),
   make_option(c("-e", "--exclude_thres"), type="integer", default=0.25, 
     help="Exclude genes with more than n% of the measurements missing [default= %default] -> by default, genes with 25% of the measurements missing are excluded.", metavar="integer"),
   make_option(c("-r", "--replacement_mode"), type="character", default="mean", 
