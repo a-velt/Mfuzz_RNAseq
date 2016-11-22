@@ -7,9 +7,25 @@ optparse, tools, Mfuzz, GenomicFeatures, DESeq, edgeR
 Mfuzz webpage : http://mfuzz.sysbiolab.eu/
 Mfuzz paper : http://w3.ualg.pt/%7Emfutschik/publications/bioinformation.pdf
 
-Mfuzz_RNAseq.R take as input a set of RNA-seq count tables, one per sample, from HTSeq-count for example. 
+Mfuzz_RNAseq.R take as input a set of RNA-seq count tables, one per sample, from HTSeq-count for example. All the RNA-seq count tables must be contain in a same folder, given in input of the script. 
 
-Mfuzz_RNAseq.R performs a complete RNAseq data normalization and then uses Mfuzz package to perform a soft clustering of gene expression time-series data.
+For example, a folder containing four count data files : Sample1.txt,Sample2.txt,Sample3.txt,Sample4.txt
+
+Sample1.txt contains :
+
+| GeneID1       | S1Count1        |
+| GeneID2       | S1Count2        |
+| GeneID3       | S1Count3        |
+| GeneID4       | S1Count4        |
+
+And Mfuzz_RNAseq.R read all the file and generates :
+
+| GeneID        | Sample1         | Sample2         | Sample3         | Sample4         |
+| GeneID2       | S1Count2        | S2Count2        | S3Count2        | S4Count2        |
+| GeneID3       | S1Count3        | S2Count3        | S3Count3        | S4Count3        |
+| GeneID4       | S1Count4        | S2Count4        | S3Count4        | S4Count4        |
+
+From this table, Mfuzz_RNAseq.R performs a complete RNAseq data normalization and then uses Mfuzz package to perform a soft clustering of gene expression time-series data.
 
 Normalization steps : From the input count tables, the Mfuzz_RNAseq.R script performs a library size normalization with DESeq method and then adjust these normalized data for gene length (normalized data / gene length). These normalization steps are carried out to make all the samples comparable, which is required by Mfuzz package.
 
