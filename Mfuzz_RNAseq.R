@@ -242,19 +242,24 @@ m1=mestimate(exprSet.s)
 cl=mfuzz(exprSet.s,c=nb_clusters,m=m1)
 #--------------------------------------------------------------------------------------------------------------------------
 
-#--------------------------------------------------------------------------------------------------------------------------
-# membership cut-off part and plot clusters
-pdf(paste(output,paste(paste("clusters_Mfuzz_membership_equals_",membership_cutoff,sep=""),".pdf",sep=""), sep="/"))
-mfuzz.plot2(exprSet.s,cl=cl,time.labels=unique(time),min.mem=membership_cutoff, colo="fancy", x11=FALSE)
-dev.off()
-#--------------------------------------------------------------------------------------------------------------------------
+for (membership in membership_cutoff){
+  # create one output folder per membership
+  dir=paste(output,paste("cluster_with_membership",membership, sep=""),sep="/")
+  dir.create(dir, showWarnings = FALSE)
+  #--------------------------------------------------------------------------------------------------------------------------
+  # membership cut-off part and plot clusters
+  pdf(paste(dir,paste(paste("clusters_Mfuzz_membership_equals_",membership,sep=""),".pdf",sep=""), sep="/"))
+  mfuzz.plot2(exprSet.s,cl=cl,time.labels=unique(time),min.mem=membership, colo="fancy", x11=FALSE)
+  dev.off()
+  #--------------------------------------------------------------------------------------------------------------------------
 
-#--------------------------------------------------------------------------------------------------------------------------
-# generates one genes list per cluster
-acore.list=acore(exprSet.s,cl=cl,min.acore=membership_cutoff)
-for (cluster in 1:nb_clusters){
-  print(paste(paste("Number of genes in cluster", cluster, sep=" "),dim(acore.list[[cluster]])[1], sep=" : "))
-  cluster_table=merge(alldata,acore.list[[cluster]][2], by="row.names", all.y=TRUE)
-  write.table(cluster_table,paste(output,paste(paste("list_of_genes_in_cluster",cluster,sep="_"),".txt"),sep="/"))
+  #--------------------------------------------------------------------------------------------------------------------------
+  # generates one genes list per cluster
+  acore.list=acore(exprSet.s,cl=cl,min.acore=membership)
+  for (cluster in 1:nb_clusters){
+    print(paste(paste("Number of genes in cluster", cluster, sep=" "),dim(acore.list[[cluster]])[1], sep=" : "))
+    cluster_table=merge(alldata,acore.list[[cluster]][2], by="row.names", all.y=TRUE)
+    write.table(cluster_table,paste(dir,paste(paste("list_of_genes_in_cluster",cluster,sep="_"),".txt"),sep="/"))
+  }
+  #--------------------------------------------------------------------------------------------------------------------------
 }
-#--------------------------------------------------------------------------------------------------------------------------
