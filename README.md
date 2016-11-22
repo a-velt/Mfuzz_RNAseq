@@ -2,7 +2,7 @@
 A R script to perform clustering of gene expression time-series RNA-seq data with Mfuzz.
 
 Required R libraries :
-optparse,tools,Mfuzz,GenomicFeatures,DESeq,edgeR
+optparse, tools, Mfuzz, GenomicFeatures, DESeq, edgeR
 
 Mfuzz webpage : http://mfuzz.sysbiolab.eu/
 Mfuzz paper : http://w3.ualg.pt/%7Emfutschik/publications/bioinformation.pdf
