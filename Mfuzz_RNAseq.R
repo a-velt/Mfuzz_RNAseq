@@ -58,10 +58,16 @@ option_list = list(
     help="The membership cut-off to use with Mfuzz -> see the Mfuzz paper : http://www.bioinformation.net/002/000200022007.pdf [default= %default]", metavar="integer"),
   make_option(c("-s", "--min_std"), type="integer", default=0, 
     help="Threshold for minimum standard deviation, use by Mfuzz. If the standard deviation of a gene's expression is smaller than min.std the corresponding gene will be excluded. Default : no filtering. [default= %default]", metavar="integer"),
-  make_option(c("-o", "--output"), type="character", default=NULL, 
+  make_option(c("-e", "--exclude_thres"), type="integer", default=0.25, 
+    help="Exclude genes with more than n% of the measurements missing [default= %default] -> by default, genes with 25% of the measurements missing are excluded.", metavar="integer"),
+  make_option(c("-r", "--replacement_mode"), type="character", default="mean", 
+    help="Mode method for replacement of missing values. Fuzzy  c-means  like  many  other  cluster  algorithms,  does  not  allow  for  missing  values.
+          Thus, by default, we  timelace  remaining  missing  values  by  the  average  values  expression  value  of  the corresponding gene. [default= %default]
+          Other available methods : median, knn, knnw", metavar="character"),
+  make_option(c("-o", "--output"), type="character", default=NULL,
     help="The directory where store the results. By default, the current directory. [default= %default]", metavar="character")
 ); 
- 
+
 # parsing of the arguments
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
@@ -88,6 +94,8 @@ time=as.vector(strsplit(opt$time,","))[[1]]
 nb_clusters=opt$nb_clusters
 membership_cutoff=opt$membership_cutoff
 min_std_threshold=opt$min_std
+exclude_thres=opt$exclude_thres
+replacement_mode=opt$replacement_mode
 output=opt$output
 
 # test of the output, if empty, give the current directory
@@ -185,7 +193,7 @@ exprSet=ExpressionSet(assayData=exprs_with_time)
 #--------------------------------------------------------------------------------------------------------------------------
 # As a first step,  we exclude genes with more than 25% of the measurements missing 
 # -> genes with 0 RPKN in 25% of the conditions  
-exprSet.r=filter.NA(exprSet, thres=0.25)
+exprSet.r=filter.NA(exprSet, thres=exclude_thres)
 #--------------------------------------------------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------------------------------------------------
@@ -198,7 +206,7 @@ exprSet.r=filter.NA(exprSet, thres=0.25)
   # median- missing values will be replaced by the median expression value of the gene,
   # knn- missing values will be replaced by the averging over the corresponding expression values of the k-nearest neighbours,
   # knnw-same replacement method as knn, but the expression values averaged are weighted by the distance to the corresponding neighbour
-exprSet.f=fill.NA(exprSet.r,mode="mean")
+exprSet.f=fill.NA(exprSet.r,mode=replacement_mode)
 #--------------------------------------------------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------------------------------------------------
