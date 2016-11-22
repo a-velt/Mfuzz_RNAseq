@@ -78,6 +78,7 @@ if (is.null(opt$time)){
   stop("At least one argument must be supplied (time values vector).n", call.=FALSE)
 }
 
+# variable assignment
 count_files_folder=opt$folder
 annotation=opt$annotation
 gene_name_attribute=opt$gene_attribute
@@ -86,10 +87,16 @@ nb_clusters=opt$nb_clusters
 membership_cutoff=opt$membership_cutoff
 output=opt$output
 
+# test of the output, if empty, give the current directory
 if (is.null(output)){
   output=getwd()
 }
 
+###########################################################################################################################
+# Normalization part
+###########################################################################################################################
+
+# determine the extension of the annotation file (may be gtf or gff)
 annotation_ext=file_ext(annotation)
 # create the object with all count files
 files=list.files(count_files_folder)
@@ -116,13 +123,13 @@ datanorm = t(t(data)/sizeFactors(cds))
 colnames(datanorm)=paste(colnames(data),"normalized_by_DESeq", sep="_")
 # merge the raw read counts and the read counts normalized by DESeq
 alldata = merge(data, datanorm, by="row.names", all=T)
-alldata2=alldata[,-1]
-rownames(alldata2)=alldata[,1]
-alldata=alldata2
+alldata_tmp=alldata[,-1]
+rownames(alldata_tmp)=alldata[,1]
+alldata=alldata_tmp
 # merge the raw and normalized read counts with the genes length (in bp)
-alldata_ok = merge(alldata, exonic.gene.sizes, by="row.names", all.x=T)
-alldata=alldata_ok[,-1]
-rownames(alldata)=alldata_ok[,1]
+alldata_tmp = merge(alldata, exonic.gene.sizes, by="row.names", all.x=T)
+alldata=alldata_tmp[,-1]
+rownames(alldata)=alldata_tmp[,1]
 # recover of the start of normalized read count columns and the end
 start=length(files)+1
 end=length(files)*2
@@ -131,11 +138,17 @@ end=length(files)*2
 rpkn = alldata[,start:end] / (as.vector(dim(alldata)[2]/1000 ))
 colnames(rpkn)=paste(colnames(data),"normalized_by_DESeq_and_divided_by_gene_length", sep="_")
 # merge of rpkn with the table containing raw and normalized read counts and gene length
-alldata_ok = merge(alldata, rpkn, by="row.names", all.x=T)
-alldata=alldata_ok[,-1]
-rownames(alldata)=alldata_ok[,1]
+alldata_tmp = merge(alldata, rpkn, by="row.names", all.x=T)
+alldata=alldata_tmp[,-1]
+rownames(alldata)=alldata_tmp[,1]
 # write of this table containing the raw read counts and the different normalization
 write.table(alldata, paste(output,"normalized_counts_all_genes.txt",sep="/"), sep="\t", quote=F, row.names=T, dec=".")
+
+###########################################################################################################################
+# Mfuzz part
+###########################################################################################################################
+
+# determine the first RPKN column in the alldata object -> RPKN are used by Mfuzz for genes clustering
 first_rpkn_column=dim(alldata)[2]-length(files)+1
 # here we create a matrix containing all the RPKN columns, used by Mfuzz for the clustering
 exprs=as.matrix(alldata[,first_rpkn_column:dim(alldata)[2]])
@@ -160,6 +173,7 @@ for ( i in unique(time) ){
 }
 # here we have a RPKN matrix containing one column per time value (and not one column per sample)
 exprs_with_time=as.matrix(mean_rpkn_ok, header=TRUE, sep="\t",row.names=1,as.is=TRUE)
+
 # we create the Mfuzz object (ExpressionSet)
 exprSet=ExpressionSet(assayData=exprs_with_time)
 
