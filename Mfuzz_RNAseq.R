@@ -56,6 +56,8 @@ option_list = list(
     help="Number of clusters to generate with Mfuzz (empirical choice) [default= %default]", metavar="integer"),
   make_option(c("-m", "--membership_cutoff"), type="integer", default=0.7, 
     help="The membership cut-off to use with Mfuzz -> see the Mfuzz paper : http://www.bioinformation.net/002/000200022007.pdf [default= %default]", metavar="integer"),
+  make_option(c("-s", "--min_std"), type="integer", default=0, 
+    help="Threshold for minimum standard deviation, use by Mfuzz. If the standard deviation of a gene's expression is smaller than min.std the corresponding gene will be excluded. Default : no filtering. [default= %default]", metavar="integer"),
   make_option(c("-o", "--output"), type="character", default=NULL, 
     help="The directory where store the results. By default, the current directory. [default= %default]", metavar="character")
 ); 
@@ -85,6 +87,7 @@ gene_name_attribute=opt$gene_attribute
 time=as.vector(strsplit(opt$time,","))[[1]]
 nb_clusters=opt$nb_clusters
 membership_cutoff=opt$membership_cutoff
+min_std_threshold=opt$min_std
 output=opt$output
 
 # test of the output, if empty, give the current directory
@@ -197,14 +200,12 @@ exprSet.f=fill.NA(exprSet.r,mode="mean")
 #--------------------------------------------------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------------------------------------------------
-# Most cluster analyses published include a filtering step to remove genes which are expressed
-# at  low  levels  or  show  only  small  changes  in  expression.   Different  filtering  procedures  have
-# been proposed.  A popular procedure is the setting of a minimum threshold for variation
+# As soft clustering is noise robust, pre-filtering can usually be avoided. 
+# However, if the number of genes with small expression changes is large, such pre-filtering may be necessary to reduce noise. 
 # This function can be used to exclude genes with low standard deviation.
-# Thus, the value of a filtering threshold remains arbitrary.  As no stringent filtering proce-
-# dure currently exists, we avoided any prior filtering of gene data.  This prevents the loss of
-# genes that may be biologically important.
-tmp=filter.std(exprSet.f,min.std=0, visu=FALSE)
+# min.std : threshold for minimum standard deviation. 
+# If the standard deviation of a gene's expression is smaller than min.std the corresponding gene will be excluded.
+tmp=filter.std(exprSet.f,min.std=min_std_threshold, visu=FALSE)
 #--------------------------------------------------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------------------------------------------------
