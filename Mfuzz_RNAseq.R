@@ -15,7 +15,7 @@
 #
 # Arguments description :
 # count_files_folder -> directory containing all the raw count data tables (one per sample)
-# annotation -> a gtf or gff file allowing to calculate the genes length
+# annotation -> a gtf or gff file with transcripts/genes information allowing to calculate the genes length (sum of the exons length, overlap of exons is take into account)
 # gene_name_attribute -> the name of the attribute in the gtf referring to the gene information
 # time -> give the time value of each file by respecting the same order in the vector than the files in the folder.
 #   if several files correspond to a same time (replicates), give the same time value and then the script performs the mean on the normalized counts of all the
@@ -47,7 +47,7 @@ option_list = list(
   make_option(c("-f", "--folder"), type="character", default=NULL, 
     help="Directory containing all the raw count data tables (one per sample)", metavar="character"),
   make_option(c("-a", "--annotation"), type="character", default=NULL, 
-    help="A gtf or gff file allowing to calculate the genes length", metavar="character"),
+    help="A gtf or gff file with transcripts/genes information allowing to calculate the genes length (sum of the exons length, overlap of exons is take into account)", metavar="character"),
   make_option(c("-b", "--gene_attribute"), type="character", default="gene", 
     help="The name of the attribute in the gtf referring to the gene information [default= %default]", metavar="character"),
   make_option(c("-t", "--time"), type="character", default=NULL, 
