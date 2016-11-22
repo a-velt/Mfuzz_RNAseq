@@ -21,6 +21,7 @@ Sample1.txt contains :
 And Mfuzz_RNAseq.R read all the file and generates :
 
 | GeneID        | Sample1         | Sample2         | Sample3         | Sample4         |
+--- | --- | ---| ---| ---
 | GeneID2       | S1Count2        | S2Count2        | S3Count2        | S4Count2        |
 | GeneID3       | S1Count3        | S2Count3        | S3Count3        | S4Count3        |
 | GeneID4       | S1Count4        | S2Count4        | S3Count4        | S4Count4        |
