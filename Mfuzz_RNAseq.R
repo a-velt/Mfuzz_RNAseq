@@ -51,19 +51,23 @@ option_list = list(
   make_option(c("-b", "--gene_attribute"), type="character", default="gene", 
     help="The name of the attribute in the gtf referring to the gene information [default= %default]", metavar="character"),
   make_option(c("-t", "--time"), type="character", default=NULL, 
-    help="Give the time value of each file by respecting the same order in the vector than the files in the folder. Give a list of type 'time1,time1,time1,time2,time2,time2,time3'. If several files correspond to a same time (replicates), give the same time value and then the script performs the mean on the normalized counts of all the samples of a same time", metavar="character"),
+    help="Give the time value of each file by respecting the same order in the vector than the files in the folder. 
+            Give a list of type 'time1,time1,time1,time2,time2,time2,time3'. 
+            If several files correspond to a same time (replicates), give the same time value and then the script performs the mean on the normalized counts of all the samples of a same time", metavar="character"),
   make_option(c("-n", "--nb_clusters"), type="integer", default=4, 
     help="Number of clusters to generate with Mfuzz (empirical choice) [default= %default]", metavar="integer"),
   make_option(c("-m", "--membership_cutoff"), type="integer", default=0.7, 
-    help="The membership cut-off to use with Mfuzz -> see the Mfuzz paper : http://www.bioinformation.net/002/000200022007.pdf [default= %default]", metavar="integer"),
+    help="The membership cut-off to use to generate gene lists for each cluster with Mfuzz.
+          By default, genes having a membership value of 0.7 for the cluster are recovered in the list for this cluster.
+          See the Mfuzz paper : http://www.bioinformation.net/002/000200022007.pdf [default= %default]", metavar="integer"),
   make_option(c("-s", "--min_std"), type="integer", default=0, 
     help="Threshold for minimum standard deviation, use by Mfuzz. If the standard deviation of a gene's expression is smaller than min.std the corresponding gene will be excluded. Default : no filtering. [default= %default]", metavar="integer"),
   make_option(c("-e", "--exclude_thres"), type="integer", default=0.25, 
     help="Exclude genes with more than n% of the measurements missing [default= %default] -> by default, genes with 25% of the measurements missing are excluded.", metavar="integer"),
   make_option(c("-r", "--replacement_mode"), type="character", default="mean", 
     help="Mode method for replacement of missing values. Fuzzy  c-means  like  many  other  cluster  algorithms,  does  not  allow  for  missing  values.
-          Thus, by default, we  timelace  remaining  missing  values  by  the  average  values  expression  value  of  the corresponding gene. [default= %default]
-          Other available methods : median, knn, knnw", metavar="character"),
+            Thus, by default, we  timelace  remaining  missing  values  by  the  average  values  expression  value  of  the corresponding gene. [default= %default]
+            Other available methods : median, knn, knnw", metavar="character"),
   make_option(c("-o", "--output"), type="character", default=NULL,
     help="The directory where store the results. By default, the current directory. [default= %default]", metavar="character")
 ); 
