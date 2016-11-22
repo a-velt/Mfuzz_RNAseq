@@ -10,8 +10,9 @@
 # and performs the DESeq normalization method (normalization by library size) and then divides these normalized counts by gene length (in kb) to obtain
 # a RPKN (reads per kilobase number). After gene length normalization, this script performs the clustering of gene expression time-series RNA-seq data with Mfuzz.
 #
-# Usage in, e.g, Rstudio :
-# ./Mfuzz_RNAseq -f count_files_folder -a annotation -b gene_name_attribute -t time -n nb_clusters -m membership_cutoff -o output_directory
+# Usage :
+# Complete command : /usr/bin/Rscript Mfuzz_RNAseq.R -f count_files_folder -a annotation -b gene_name_attribute -t time -n nb_clusters -m membership_cutoff -s 0 -e 0.25 -r "mean" -o output_directory
+# Minimal command : /usr/bin/Rscript Mfuzz_RNAseq.R -f count_files_folder -a annotation -t time
 #
 # Arguments description :
 # count_files_folder -> directory containing all the raw count data tables (one per sample)
@@ -31,7 +32,10 @@
 # time="time1,time1,time1,time2,time2,time2,time3"
 # nb_clusters = 4
 # membership_cutoff = 0.7
-# output = /home/user/cluster_output
+# min_std_threshold= 0
+# exclude_thres= 0.25
+# replacement_mode="mean"
+# output="/home/user/cluster_output"
 #################################################################################################################################################################
 
 # libraries dependencies
