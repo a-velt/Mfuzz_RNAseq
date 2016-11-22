@@ -23,6 +23,7 @@
 #   samples of a same time
 # nb_clusters -> number of clusters to generate with Mfuzz (empirical choice)
 # membership_cutoff -> the membership cut-off to use with Mfuzz -> see the Mfuzz paper : http://www.bioinformation.net/002/000200022007.pdf
+#                       you can give one value, eg "0.7" or several values separated by ",", eg '0.5,0.7'
 # output -> directory where store the results
 #
 # Examples of arguments to give :
@@ -31,7 +32,7 @@
 # gene_name_attribute="gene"
 # time="time1,time1,time1,time2,time2,time2,time3"
 # nb_clusters = 4
-# membership_cutoff = 0.7
+# membership_cutoff = '0.5,0.7'
 # min_std_threshold= 0
 # exclude_thres= 0.25
 # replacement_mode="mean"
@@ -60,10 +61,11 @@ option_list = list(
     help="The name of the attribute in the gtf referring to the gene information [default= %default]", metavar="character"),
   make_option(c("-n", "--nb_clusters"), type="integer", default=as.numeric(4), 
     help="Number of clusters to generate with Mfuzz (empirical choice) [default= %default]", metavar="integer"),
-  make_option(c("-m", "--membership_cutoff"), type="double", default=as.numeric(0.7), 
+  make_option(c("-m", "--membership_cutoff"), type="character", default=as.numeric(0.7), 
     help="The membership cut-off to use to generate gene lists for each cluster with Mfuzz.
           By default, genes having a membership value of 0.7 for the cluster are recovered in the list for this cluster.
-          See the Mfuzz paper : http://www.bioinformation.net/002/000200022007.pdf [default= %default]", metavar="double"),
+          You can give one value, eg '0.7' or several values separated by ",", eg '0.5,0.7'.
+          See the Mfuzz paper : http://www.bioinformation.net/002/000200022007.pdf [default= %default]", metavar="character"),
   make_option(c("-s", "--min_std"), type="double", default=as.numeric(0), 
     help="Threshold for minimum standard deviation, use by Mfuzz. If the standard deviation of a gene's expression is smaller than min.std the corresponding gene will be excluded.
           Default : no filtering. [default= %default]", metavar="double"),
@@ -101,7 +103,7 @@ annotation=opt$annotation
 gene_name_attribute=opt$gene_attribute
 time=as.vector(strsplit(opt$time,","))[[1]]
 nb_clusters=opt$nb_clusters
-membership_cutoff=opt$membership_cutoff
+membership_cutoff=as.vector(strsplit(opt$membership_cutoff,","))[[1]]
 min_std_threshold=opt$min_std
 exclude_thres=opt$exclude_thres
 replacement_mode=opt$replacement_mode
@@ -243,8 +245,9 @@ cl=mfuzz(exprSet.s,c=nb_clusters,m=m1)
 #--------------------------------------------------------------------------------------------------------------------------
 
 for (membership in membership_cutoff){
+  membership=as.numeric(membership)
   # create one output folder per membership
-  dir=paste(output,paste("cluster_with_membership",membership, sep=""),sep="/")
+  dir=paste(output,paste("cluster_with_membership",membership, sep="_"),sep="/")
   dir.create(dir, showWarnings = FALSE)
   #--------------------------------------------------------------------------------------------------------------------------
   # membership cut-off part and plot clusters
@@ -259,7 +262,7 @@ for (membership in membership_cutoff){
   for (cluster in 1:nb_clusters){
     print(paste(paste("Number of genes in cluster", cluster, sep=" "),dim(acore.list[[cluster]])[1], sep=" : "))
     cluster_table=merge(alldata,acore.list[[cluster]][2], by="row.names", all.y=TRUE)
-    write.table(cluster_table,paste(dir,paste(paste("list_of_genes_in_cluster",cluster,sep="_"),".txt"),sep="/"))
+    write.table(cluster_table,paste(dir,paste(paste("list_of_genes_in_cluster",cluster,sep="_"),".txt"),sep="/"), sep="\t",row.names=F, dec=".")
   }
   #--------------------------------------------------------------------------------------------------------------------------
 }
