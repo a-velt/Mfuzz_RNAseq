@@ -259,10 +259,13 @@ for (membership in membership_cutoff){
   #--------------------------------------------------------------------------------------------------------------------------
   # generates one genes list per cluster
   acore.list=acore(exprSet.s,cl=cl,min.acore=membership)
+  print("----")
+  print(paste("Membership",membership,sep=" : "))
   for (cluster in 1:nb_clusters){
     print(paste(paste("Number of genes in cluster", cluster, sep=" "),dim(acore.list[[cluster]])[1], sep=" : "))
     cluster_table=merge(alldata,acore.list[[cluster]][2], by="row.names", all.y=TRUE)
     write.table(cluster_table,paste(dir,paste(paste("list_of_genes_in_cluster",cluster,sep="_"),".txt"),sep="/"), sep="\t",row.names=F, dec=".")
   }
+  print("----")
   #--------------------------------------------------------------------------------------------------------------------------
 }
