@@ -11,9 +11,10 @@ Mfuzz_RNAseq.R take as input a set of RNA-seq count tables, one per sample, from
 
 For example, a folder containing four count data files : Sample1.txt,Sample2.txt,Sample3.txt,Sample4.txt
 
-Sample1.txt contains :
+Sample1.txt contains the following data, without header :
 
 | GeneID1       | S1Count1        |
+| ---| ---
 | GeneID2       | S1Count2        |
 | GeneID3       | S1Count3        |
 | GeneID4       | S1Count4        |
