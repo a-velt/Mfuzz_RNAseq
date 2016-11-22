@@ -64,9 +64,9 @@ option_list = list(
     help="The membership cut-off to use to generate gene lists for each cluster with Mfuzz.
           By default, genes having a membership value of 0.7 for the cluster are recovered in the list for this cluster.
           See the Mfuzz paper : http://www.bioinformation.net/002/000200022007.pdf [default= %default]", metavar="double"),
-  make_option(c("-s", "--min_std"), type="integer", default=as.numeric(0), 
+  make_option(c("-s", "--min_std"), type="double", default=as.numeric(0), 
     help="Threshold for minimum standard deviation, use by Mfuzz. If the standard deviation of a gene's expression is smaller than min.std the corresponding gene will be excluded.
-          Default : no filtering. [default= %default]", metavar="integer"),
+          Default : no filtering. [default= %default]", metavar="double"),
   make_option(c("-e", "--exclude_thres"), type="double", default=as.numeric(0.25), 
     help="Exclude genes with more than n% of the measurements missing [default= %default] -> by default, genes with 25% of the measurements missing are excluded.", metavar="double"),
   make_option(c("-r", "--replacement_mode"), type="character", default="mean", 
