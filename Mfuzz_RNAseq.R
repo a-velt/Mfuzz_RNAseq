@@ -94,6 +94,8 @@ output=opt$output
 if (is.null(output)){
   output=getwd()
 }
+# create output if doesn't exists
+dir.create(output, showWarnings = FALSE)
 
 ###########################################################################################################################
 # Normalization part
