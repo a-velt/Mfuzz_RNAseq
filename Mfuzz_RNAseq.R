@@ -7,8 +7,8 @@
 # and exclude genes which do not show expression (i.e. with FPKM equals zero).
 #
 # This script takes as input a directory path containing all (and only) the RNA-seq raw count data tables (eg a directory with one htseq-count file per sample)
-# and performs the DESeq normalization method (normalization by library size) and then divides these normalized counts by gene length (in kb) to obtain
-# a RPKN (reads per kilobase number). After gene length normalization, this script performs the clustering of gene expression time-series RNA-seq data with Mfuzz.
+# and performs the DESeq normalization method (normalization by library size) and then calculates the RPKM. After gene length normalization, this script performs 
+# the clustering of gene expression time-series RNA-seq data with Mfuzz.
 #
 # Usage :
 # Complete command : /usr/bin/Rscript Mfuzz_RNAseq.R -f count_files_folder -a annotation -b gene_name_attribute -t time -n nb_clusters -m membership_cutoff -s 0 -e 0.25 -r "mean" -o output_directory
@@ -158,11 +158,11 @@ rownames(alldata)=alldata_tmp[,1]
 start=length(files)+1
 end=length(files)*2
 # calcul of the RPKM
-data_raw=merge(data,exonic.gene.sizes, by="row.names", all.x=T)
-data_raw_tmp=data_raw[,-1]
-rownames(data_raw_tmp)=data_raw[,1]
-data_raw=data_raw_tmp
-rpkm=rpkm(data_raw[,1:dim(data_raw)[2]-1],gene.length=data_raw$"gene_length_bp", normalized.lib.sizes=TRUE, log=FALSE)
+data_norm=merge(datanorm,exonic.gene.sizes, by="row.names", all.x=T)
+data_norm_tmp=data_norm[,-1]
+rownames(data_norm_tmp)=data_norm[,1]
+data_norm=data_norm_tmp
+rpkm=rpkm(data_norm[,1:dim(data_norm)[2]-1],gene.length=data_norm$"gene_length_bp", normalized.lib.sizes=FALSE, log=FALSE)
 colnames(rpkm)=paste(colnames(data),"normalized_by_DESeq_and_divided_by_gene_length", sep="_")
 # merge of rpkn with the table containing raw and normalized read counts and gene length
 alldata_tmp = merge(alldata, rpkm, by="row.names", all.x=T)
