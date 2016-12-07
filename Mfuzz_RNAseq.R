@@ -157,12 +157,15 @@ rownames(alldata)=alldata_tmp[,1]
 # recover of the start of normalized read count columns and the end
 start=length(files)+1
 end=length(files)*2
-# calcul of the RPKN -> normalized read counts / (gene length / 1000)
-# gene length is divided by 1000 to transform bp on kbp
-rpkn = alldata[,start:end] / (as.vector(dim(alldata)[2]/1000 ))
-colnames(rpkn)=paste(colnames(data),"normalized_by_DESeq_and_divided_by_gene_length", sep="_")
+# calcul of the RPKM
+data_raw=merge(data,exonic.gene.sizes, by="row.names", all.x=T)
+data_raw_tmp=data_raw[,-1]
+rownames(data_raw_tmp)=data_raw[,1]
+data_raw=data_raw_tmp
+rpkm=rpkm(data_raw[,1:dim(data_raw)[2]-1],gene.length=data_raw$"gene_length_bp", normalized.lib.sizes=TRUE, log=FALSE)
+colnames(rpkm)=paste(colnames(data),"normalized_by_DESeq_and_divided_by_gene_length", sep="_")
 # merge of rpkn with the table containing raw and normalized read counts and gene length
-alldata_tmp = merge(alldata, rpkn, by="row.names", all.x=T)
+alldata_tmp = merge(alldata, rpkm, by="row.names", all.x=T)
 alldata=alldata_tmp[,-1]
 rownames(alldata)=alldata_tmp[,1]
 # write of this table containing the raw read counts and the different normalization
@@ -173,30 +176,30 @@ write.table(alldata, paste(output,"normalized_counts_all_genes.txt",sep="/"), se
 ###########################################################################################################################
 
 # determine the first RPKN column in the alldata object -> RPKN are used by Mfuzz for genes clustering
-first_rpkn_column=dim(alldata)[2]-length(files)+1
+first_rpkm_column=dim(alldata)[2]-length(files)+1
 # here we create a matrix containing all the RPKN columns, used by Mfuzz for the clustering
-exprs=as.matrix(alldata[,first_rpkn_column:dim(alldata)[2]])
+exprs=as.matrix(alldata[,first_rpkm_column:dim(alldata)[2]])
 # and for each time value containing replicates, we calculate the RPKN count means
 # if there are no replicates, we keep the initial RPKN
 count=1
 for ( i in unique(time) ){
   if ( dim(as.data.frame(exprs[,which(time==i)]))[2] == 1 ){
-    mean_rpkn=data.frame(exprs[,which(time==i)])
+    mean_rpkm=data.frame(exprs[,which(time==i)])
   } else {
-    mean_rpkn=data.frame(rowMeans(exprs[,which(time==i)]))
+    mean_rpkm=data.frame(rowMeans(exprs[,which(time==i)]))
   }
-  colnames(mean_rpkn)=i
+  colnames(mean_rpkm)=i
   if (count == 1){
-    mean_rpkn_ok=mean_rpkn
+    mean_rpkm_ok=mean_rpkm
   } else {
-    mean_rpkn_ok=merge(mean_rpkn_ok,mean_rpkn,by="row.names")
-    rownames(mean_rpkn_ok)=mean_rpkn_ok[,1]
-    mean_rpkn_ok=mean_rpkn_ok[,-1]
+    mean_rpkm_ok=merge(mean_rpkm_ok,mean_rpkm,by="row.names")
+    rownames(mean_rpkm_ok)=mean_rpkm_ok[,1]
+    mean_rpkm_ok=mean_rpkm_ok[,-1]
   }
   count=count+1
 }
 # here we have a RPKN matrix containing one column per time value (and not one column per sample)
-exprs_with_time=as.matrix(mean_rpkn_ok, header=TRUE, sep="\t",row.names=1,as.is=TRUE)
+exprs_with_time=as.matrix(mean_rpkm_ok, header=TRUE, sep="\t",row.names=1,as.is=TRUE)
 
 # we create the Mfuzz object (ExpressionSet)
 exprSet=ExpressionSet(assayData=exprs_with_time)
