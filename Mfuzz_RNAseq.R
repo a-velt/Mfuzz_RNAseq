@@ -162,7 +162,7 @@ data_norm=merge(datanorm,exonic.gene.sizes, by="row.names", all.x=T)
 data_norm_tmp=data_norm[,-1]
 rownames(data_norm_tmp)=data_norm[,1]
 data_norm=data_norm_tmp
-rpkm=rpkm(data_norm[,1:dim(data_norm)[2]-1],gene.length=data_norm$"gene_length_bp", normalized.lib.sizes=FALSE, log=FALSE)
+rpkm=rpkm(data_norm[,1:dim(data_norm)[2]-1],gene.length=data_norm$"gene_length_bp", normalized.lib.sizes=TRUE, log=FALSE)
 colnames(rpkm)=paste(colnames(data),"normalized_by_DESeq_and_divided_by_gene_length", sep="_")
 # merge of rpkn with the table containing raw and normalized read counts and gene length
 alldata_tmp = merge(alldata, rpkm, by="row.names", all.x=T)
